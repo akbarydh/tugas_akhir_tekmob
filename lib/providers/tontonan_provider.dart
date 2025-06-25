@@ -1,5 +1,3 @@
-// File: lib/providers/tontonan_provider.dart
-
 import 'package:flutter/material.dart';
 import '../models/tontonan.dart';
 
@@ -26,25 +24,18 @@ class TontonanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Tontonan? cariById(String id) {
-    try {
-      return _daftarTontonan.firstWhere((t) => t.id == id);
-    } catch (_) {
-      return null;
-    }
-  }
+  Tontonan? cariById(String id) =>
+      _daftarTontonan.firstWhere((t) => t.id == id, orElse: () => Tontonan(id: '', judul: '', genre: ''));
 
-  List<Tontonan> cariByJudul(String keyword) {
-    return _daftarTontonan
-        .where((t) => t.judul.toLowerCase().contains(keyword.toLowerCase()))
-        .toList();
-  }
+  List<Tontonan> cariByJudul(String keyword) => _daftarTontonan
+      .where((t) => t.judul.toLowerCase().contains(keyword.toLowerCase()))
+      .toList();
 
-  List<Tontonan> filterBy({String? genre, bool? sudahDitonton}) {
-    return _daftarTontonan.where((t) {
-      final cocokGenre = genre == null || t.genre == genre;
-      final cocokStatus = sudahDitonton == null || t.sudahDitonton == sudahDitonton;
-      return cocokGenre && cocokStatus;
-    }).toList();
-  }
+  List<Tontonan> filterBy({String? genre, bool? sudahDitonton}) => _daftarTontonan
+      .where((t) {
+        final g = genre == null || t.genre == genre;
+        final s = sudahDitonton == null || t.sudahDitonton == sudahDitonton;
+        return g && s;
+      })
+      .toList();
 }
