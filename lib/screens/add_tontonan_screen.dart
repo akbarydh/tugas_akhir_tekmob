@@ -1,106 +1,159 @@
-// File: lib/screens/add_tontonan_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/tontonan.dart';
-import '../providers/tontonan_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../models/tontonan.dart';
+import '../providers/tontonan_provider.dart';
+
 class AddTontonanScreen extends StatefulWidget {
+  const AddTontonanScreen({super.key});
+
   @override
-  _AddTontonanScreenState createState() => _AddTontonanScreenState();
+  State<AddTontonanScreen> createState() => _AddTontonanScreenState();
 }
 
 class _AddTontonanScreenState extends State<AddTontonanScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _judulController = TextEditingController();
-  final _catatanController = TextEditingController();
+  String _judul = '';
   String _genre = 'Action';
   bool _sudahDitonton = false;
-  double _rating = 3;
+  int _rating = 3;
+  String _catatan = '';
 
-  void _simpanForm() {
-    if (_formKey.currentState!.validate()) {
-      final newTontonan = Tontonan(
-        id: const Uuid().v4(),
-        judul: _judulController.text,
-        genre: _genre,
-        sudahDitonton: _sudahDitonton,
-        rating: _rating.toInt(),
-        catatan: _catatanController.text,
-      );
+  static const List<String> _genreOptions = [
+    'Action',
+    'Drama',
+    'Horror',
+    'Comedy',
+    'Romance',
+  ];
 
-      Provider.of<TontonanProvider>(context, listen: false)
-          .tambahTontonan(newTontonan);
+  void _simpan() {
+    _formKey.currentState!.save();
 
-      Navigator.of(context).pop();
-    }
+    final newTontonan = Tontonan(
+      id: const Uuid().v4(),
+      judul: _judul,
+      genre: _genre,
+      sudahDitonton: _sudahDitonton,
+      rating: _rating,
+      catatan: _catatan,
+    );
+
+    context.read<TontonanProvider>().tambahTontonan(newTontonan);
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Tontonan ditambahkan')),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Tambah Tontonan')),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('Tambah Tontonan'),
+        backgroundColor: Colors.grey.shade900,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                _simpan();
+              }
+            },
+          )
+        ],
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
+              // Judul
               TextFormField(
-                controller: _judulController,
-                decoration: InputDecoration(labelText: 'Judul'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Judul tidak boleh kosong';
-                  }
-                  return null;
-                },
+                style: const TextStyle(color: Colors.white),
+                decoration: _inputDecoration('Judul'),
+                validator: (val) =>
+                    val == null || val.isEmpty ? 'Judul wajib diisi' : null,
+                onSaved: (val) => _judul = val!.trim(),
               ),
+              const SizedBox(height: 16),
+
+              // Genre dropdown
               DropdownButtonFormField<String>(
                 value: _genre,
-                decoration: InputDecoration(labelText: 'Genre'),
-                items: ['Action', 'Drama', 'Horror', 'Comedy', 'Romance']
-                    .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                dropdownColor: Colors.grey.shade900,
+                style: const TextStyle(color: Colors.white),
+                decoration: _inputDecoration('Genre'),
+                items: _genreOptions
+                    .map((g) =>
+                        DropdownMenuItem(value: g, child: Text(g)))
                     .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _genre = value!;
-                  });
-                },
+                onChanged: (val) => setState(() => _genre = val!),
+                onSaved: (val) => _genre = val ?? 'Action',
               ),
+              const SizedBox(height: 16),
+
+              // Switch sudah ditonton
               SwitchListTile(
-                title: Text('Sudah Ditonton?'),
+                title: const Text('Sudah Ditonton', style: TextStyle(color: Colors.white)),
                 value: _sudahDitonton,
-                onChanged: (value) {
-                  setState(() {
-                    _sudahDitonton = value;
-                  });
-                },
+                onChanged: (v) => setState(() => _sudahDitonton = v),
+                activeColor: Colors.deepPurple,
+                contentPadding: EdgeInsets.zero,
               ),
-              Text('Rating: ${_rating.toInt()}'),
+              const SizedBox(height: 8),
+
+              // Rating slider + bintang
+              Text('Rating: $_rating', style: const TextStyle(color: Colors.white)),
+              Row(
+                children: List.generate(
+                  5,
+                  (i) => Icon(
+                    i < _rating ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 20,
+                  ),
+                ),
+              ),
               Slider(
-                value: _rating,
                 min: 1,
                 max: 5,
                 divisions: 4,
-                label: _rating.toInt().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    _rating = value;
-                  });
-                },
+                value: _rating.toDouble(),
+                activeColor: Colors.amber,
+                label: _rating.toString(),
+                onChanged: (val) => setState(() => _rating = val.round()),
               ),
+              const SizedBox(height: 16),
+
+              // Catatan
               TextFormField(
-                controller: _catatanController,
-                decoration: InputDecoration(labelText: 'Catatan (Opsional)'),
-                maxLines: 2,
+                maxLines: 3,
+                style: const TextStyle(color: Colors.white),
+                decoration: _inputDecoration('Catatan (opsional)'),
+                onSaved: (val) => _catatan = val ?? '',
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _simpanForm,
-                child: Text('Simpan'),
-              )
+
+              const SizedBox(height: 40),
+              ElevatedButton.icon(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _simpan();
+                  }
+                },
+                icon: const Icon(Icons.check),
+                label: const Text('Simpan'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  textStyle: const TextStyle(fontSize: 16),
+                  foregroundColor: Colors.white,
+                ),
+              ),
             ],
           ),
         ),
@@ -108,10 +161,20 @@ class _AddTontonanScreenState extends State<AddTontonanScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _judulController.dispose();
-    _catatanController.dispose();
-    super.dispose();
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white70),
+      filled: true,
+      fillColor: Colors.grey.shade900,
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.grey.shade800),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.deepPurple),
+        borderRadius: BorderRadius.circular(12),
+      ),
+    );
   }
 }
