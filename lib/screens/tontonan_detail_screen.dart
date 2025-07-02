@@ -16,34 +16,91 @@ class TontonanDetailScreen extends StatelessWidget {
 
     if (tontonan == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Detail Tontonan')),
-        body: const Center(child: Text('Tontonan tidak ditemukan.')),
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          title: const Text('Detail Tontonan'),
+          backgroundColor: Colors.grey.shade900,
+          foregroundColor: Colors.white,
+        ),
+        body: const Center(
+          child: Text(
+            'Tontonan tidak ditemukan.',
+            style: TextStyle(color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+        ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(tontonan.judul)),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text(tontonan.judul),
+        backgroundColor: Colors.grey.shade900,
+        foregroundColor: Colors.white,
+      ),
+      body: Center(
+        child: Container(
+          width: 320, // ⬅️ Ukuran kotak diperbesar sedikit
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade900,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Genre: ${tontonan.genre}', style: const TextStyle(fontSize: 18)),
+              Text(
+                tontonan.genre,
+                style: const TextStyle(
+                  color: Colors.amber,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 10),
-              Text('Rating (OMDb): ⭐ ${tontonan.rating.toStringAsFixed(1)}'),
+              Text(
+                '⭐ ${tontonan.rating.toStringAsFixed(1)}',
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 10),
-              Text('Status: ${tontonan.sudahDitonton ? "Sudah Ditonton" : "Belum Ditonton"}'),
+              Text(
+                tontonan.sudahDitonton ? 'Sudah Ditonton' : 'Belum Ditonton',
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 10),
-              Text('Rating Pribadi: ${tontonan.ratingPribadi > 0 ? tontonan.ratingPribadi.toStringAsFixed(1) : "Belum dinilai"}'),
-              const SizedBox(height: 20),
-              const Text('Sinopsis:', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text(tontonan.sinopsis),
-              const SizedBox(height: 20),
-              const Text('Catatan Pribadi:', style: TextStyle(fontWeight: FontWeight.bold)),
-              tontonan.catatanPribadi.isEmpty
-                  ? const Text('Tidak ada catatan.')
-                  : Text(tontonan.catatanPribadi),
+              Text(
+                tontonan.ratingPribadi > 0
+                    ? 'Rating Pribadi: ${tontonan.ratingPribadi.toStringAsFixed(1)}'
+                    : 'Belum dinilai',
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 14),
+              const Divider(color: Colors.white24, thickness: 0.5),
+              const SizedBox(height: 8),
+              Text(
+                tontonan.catatanPribadi.isNotEmpty
+                    ? '"${tontonan.catatanPribadi}"'
+                    : 'Tidak ada catatan.',
+                style: const TextStyle(
+                  color: Colors.white60,
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),

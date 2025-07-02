@@ -1,3 +1,5 @@
+// File: lib/screens/edit_tontonan_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/tontonan_provider.dart';
@@ -19,10 +21,11 @@ class _EditTontonanScreenState extends State<EditTontonanScreen> {
   @override
   void initState() {
     super.initState();
-    final tontonan = Provider.of<TontonanProvider>(context, listen: false).cariById(widget.id);
+    final tontonan =
+        Provider.of<TontonanProvider>(context, listen: false).cariById(widget.id);
     if (tontonan != null) {
       _sudahDitonton = tontonan.sudahDitonton;
-      _ratingPribadi = tontonan.ratingPribadi.toDouble(); // ✅ pakai double
+      _ratingPribadi = tontonan.ratingPribadi.toDouble();
       _catatanController.text = tontonan.catatanPribadi;
     }
   }
@@ -37,7 +40,7 @@ class _EditTontonanScreenState extends State<EditTontonanScreen> {
     Provider.of<TontonanProvider>(context, listen: false).updateTontonan(
       widget.id,
       sudahDitonton: _sudahDitonton,
-      ratingPribadi: _ratingPribadi.toDouble(), // ✅ jaga konsistensi
+      ratingPribadi: _ratingPribadi,
       catatanPribadi: _catatanController.text,
     );
     Navigator.of(context).pop();
@@ -49,43 +52,99 @@ class _EditTontonanScreenState extends State<EditTontonanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Tontonan')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            SwitchListTile(
-              title: const Text('Sudah Ditonton?'),
-              value: _sudahDitonton,
-              onChanged: (val) => setState(() => _sudahDitonton = val),
-            ),
-            const SizedBox(height: 16),
-            const Text('Rating Pribadi (0–5):'),
-            Slider(
-              value: _ratingPribadi,
-              onChanged: (val) => setState(() => _ratingPribadi = val),
-              min: 0,
-              max: 5,
-              divisions: 5,
-              label: _ratingPribadi.toStringAsFixed(1),
-            ),
-            const SizedBox(height: 16),
-            const Text('Catatan Pribadi:'),
-            TextField(
-              controller: _catatanController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Masukkan catatan pribadi...',
-                border: OutlineInputBorder(),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('Edit Tontonan'),
+        backgroundColor: Colors.grey.shade900,
+        foregroundColor: Colors.white,
+      ),
+      body: Center(
+        child: Container(
+          width: 320,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade900,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.45),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _simpanPerubahan,
-              icon: const Icon(Icons.save),
-              label: const Text('Simpan'),
-            ),
-          ],
+            ],
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              SwitchListTile(
+                activeColor: Colors.amber,
+                title: const Text(
+                  'Sudah Ditonton?',
+                  style: TextStyle(color: Colors.white),
+                ),
+                value: _sudahDitonton,
+                onChanged: (val) => setState(() => _sudahDitonton = val),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Rating Pribadi (0–5):',
+                style: TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+              Slider(
+                value: _ratingPribadi,
+                onChanged: (val) => setState(() => _ratingPribadi = val),
+                min: 0,
+                max: 5,
+                divisions: 5,
+                label: _ratingPribadi.toStringAsFixed(1),
+                activeColor: Colors.amber,
+                inactiveColor: Colors.white24,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Catatan Pribadi:',
+                style: TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              TextField(
+                controller: _catatanController,
+                maxLines: 4,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.grey.shade800,
+                  hintText: 'Masukkan catatan pribadi...',
+                  hintStyle: const TextStyle(color: Colors.white54),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,        // warna mencolok
+                  foregroundColor: Colors.black,        // teks hitam kontras
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: _simpanPerubahan,
+                icon: const Icon(Icons.save),
+                label: const Text('SIMPAN'),
+              ),
+            ],
+          ),
         ),
       ),
     );
