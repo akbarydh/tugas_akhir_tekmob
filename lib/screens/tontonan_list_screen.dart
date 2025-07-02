@@ -1,10 +1,15 @@
+// File: lib/screens/tontonan_list_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../providers/tontonan_provider.dart';
+import '../models/tontonan.dart';
 import 'add_tontonan_screen.dart';
 import 'tontonan_detail_screen.dart';
 import 'edit_tontonan_screen.dart';
+import '../helpers/film_search_service.dart';
 
 class TontonanListScreen extends StatefulWidget {
   @override
@@ -14,17 +19,43 @@ class TontonanListScreen extends StatefulWidget {
 class _TontonanListScreenState extends State<TontonanListScreen> {
   String _searchKeyword = '';
 
-  // widget bintang 1-5
-  Widget _buildStars(int rating) {
+  Widget _buildStars(double rating) {
     return Row(
       children: List.generate(
         5,
         (i) => Icon(
-          i < rating ? Icons.star : Icons.star_border,
+          i < rating.round() ? Icons.star : Icons.star_border,
           size: 16,
           color: Colors.amber,
         ),
       ),
+    );
+  }
+
+  Future<void> _cariFilmDanTambah(String judul) async {
+    final hasil = await FilmSearchService.cariFilm(judul);
+    if (hasil == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Film tidak ditemukan.')),
+      );
+      return;
+    }
+
+    final tontonanBaru = Tontonan(
+      id: const Uuid().v4(),
+      judul: hasil.judul,
+      genre: hasil.genre,
+      rating: hasil.rating,
+      sinopsis: hasil.sinopsis,
+      ratingPribadi: 0.0,         // 🔁 default aman
+      catatanPribadi: '',         // 🔁 default aman
+    );
+
+    Provider.of<TontonanProvider>(context, listen: false)
+        .tambahTontonan(tontonanBaru);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Film "${hasil.judul}" ditambahkan.')),
     );
   }
 
@@ -75,14 +106,42 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () =>
-                Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddTontonanScreen())),
+            onPressed: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => AddTontonanScreen())),
+          ),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () async {
+              final controller = TextEditingController();
+              await showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Cari Film'),
+                  content: TextField(
+                    controller: controller,
+                    decoration: const InputDecoration(hintText: 'Masukkan judul film'),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Batal'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _cariFilmDanTambah(controller.text);
+                      },
+                      child: const Text('Cari & Tambah'),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
       body: Column(
         children: [
-          // 🔍 search bar
           Padding(
             padding: const EdgeInsets.all(12),
             child: TextField(
@@ -97,13 +156,12 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
               ),
               onChanged: (v) => setState(() => _searchKeyword = v.trim()),
             ),
           ),
-
-          // 📋 daftar tontonan
           Expanded(
             child: daftar.isEmpty
                 ? const Center(
@@ -125,18 +183,20 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: ListTile(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           title: Text(
                             t.judul,
-                            style: const TextStyle(color: Colors.white, fontSize: 16),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 16),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 '${t.genre} • ${t.sudahDitonton ? 'Sudah Ditonton' : 'Belum Ditonton'}',
-                                style: const TextStyle(color: Colors.white60, fontSize: 13),
+                                style: const TextStyle(
+                                    color: Colors.white60, fontSize: 13),
                               ),
                               const SizedBox(height: 4),
                               _buildStars(t.rating),
@@ -147,20 +207,27 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
                             children: [
                               IconButton(
                                 tooltip: 'Edit',
-                                icon: const Icon(Icons.edit, size: 20, color: Colors.blueAccent),
+                                icon: const Icon(Icons.edit,
+                                    size: 20, color: Colors.blueAccent),
                                 onPressed: () => Navigator.of(ctx).push(
-                                  MaterialPageRoute(builder: (_) => EditTontonanScreen(id: t.id)),
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          EditTontonanScreen(id: t.id)),
                                 ),
                               ),
                               IconButton(
                                 tooltip: 'Hapus',
-                                icon: const Icon(Icons.delete, size: 20, color: Colors.redAccent),
-                                onPressed: () => _konfirmasiHapus(t.id, t.judul),
+                                icon: const Icon(Icons.delete,
+                                    size: 20, color: Colors.redAccent),
+                                onPressed: () =>
+                                    _konfirmasiHapus(t.id, t.judul),
                               ),
                             ],
                           ),
                           onTap: () => Navigator.of(ctx).push(
-                            MaterialPageRoute(builder: (_) => TontonanDetailScreen(id: t.id)),
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    TontonanDetailScreen(id: t.id)),
                           ),
                         ),
                       );

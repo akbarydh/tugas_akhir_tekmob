@@ -16,8 +16,8 @@ class TontonanDetailScreen extends StatelessWidget {
 
     if (tontonan == null) {
       return Scaffold(
-        appBar: AppBar(title: Text('Detail Tontonan')),
-        body: Center(child: Text('Tontonan tidak ditemukan.')),
+        appBar: AppBar(title: const Text('Detail Tontonan')),
+        body: const Center(child: Text('Tontonan tidak ditemukan.')),
       );
     }
 
@@ -25,18 +25,27 @@ class TontonanDetailScreen extends StatelessWidget {
       appBar: AppBar(title: Text(tontonan.judul)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Genre: ${tontonan.genre}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 10),
-            Text('Status: ${tontonan.sudahDitonton ? "Sudah Ditonton" : "Belum Ditonton"}'),
-            SizedBox(height: 10),
-            Text('Rating: ⭐ ${tontonan.rating}'),
-            SizedBox(height: 10),
-            if (tontonan.catatan.isNotEmpty)
-              Text('Catatan: ${tontonan.catatan}'),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Genre: ${tontonan.genre}', style: const TextStyle(fontSize: 18)),
+              const SizedBox(height: 10),
+              Text('Rating (OMDb): ⭐ ${tontonan.rating.toStringAsFixed(1)}'),
+              const SizedBox(height: 10),
+              Text('Status: ${tontonan.sudahDitonton ? "Sudah Ditonton" : "Belum Ditonton"}'),
+              const SizedBox(height: 10),
+              Text('Rating Pribadi: ${tontonan.ratingPribadi > 0 ? tontonan.ratingPribadi.toStringAsFixed(1) : "Belum dinilai"}'),
+              const SizedBox(height: 20),
+              const Text('Sinopsis:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(tontonan.sinopsis),
+              const SizedBox(height: 20),
+              const Text('Catatan Pribadi:', style: TextStyle(fontWeight: FontWeight.bold)),
+              tontonan.catatanPribadi.isEmpty
+                  ? const Text('Tidak ada catatan.')
+                  : Text(tontonan.catatanPribadi),
+            ],
+          ),
         ),
       ),
     );

@@ -1,41 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../models/tontonan.dart';
+import 'package:collection/collection.dart';
 
 class TontonanProvider with ChangeNotifier {
-  final List<Tontonan> _daftarTontonan = [];
+  final List<Tontonan> _daftar = [];
 
-  List<Tontonan> get semuaTontonan => [..._daftarTontonan];
+  List<Tontonan> get semuaTontonan => [..._daftar];
 
-  void tambahTontonan(Tontonan tontonan) {
-    _daftarTontonan.add(tontonan);
+  void tambahTontonan(Tontonan t) {
+    final tontonanBaru = Tontonan(
+      id: const Uuid().v4(),
+      judul: t.judul,
+      genre: t.genre,
+      rating: t.rating,
+      sinopsis: t.sinopsis,
+      sudahDitonton: false,
+      ratingPribadi: t.ratingPribadi,
+      catatanPribadi: t.catatanPribadi,
+    );
+    _daftar.add(tontonanBaru);
     notifyListeners();
   }
 
-  void editTontonan(String id, Tontonan tontonanBaru) {
-    final index = _daftarTontonan.indexWhere((t) => t.id == id);
-    if (index >= 0) {
-      _daftarTontonan[index] = tontonanBaru;
+  void updateTontonan(
+    String id, {
+    bool? sudahDitonton,
+    double? ratingPribadi, // ✅ perbaikan tipe
+    String? catatanPribadi,
+  }) {
+    final index = _daftar.indexWhere((t) => t.id == id);
+    if (index != -1) {
+      final t = _daftar[index];
+      _daftar[index] = Tontonan(
+        id: t.id,
+        judul: t.judul,
+        genre: t.genre,
+        rating: t.rating,
+        sinopsis: t.sinopsis,
+        sudahDitonton: sudahDitonton ?? t.sudahDitonton,
+        ratingPribadi: ratingPribadi ?? t.ratingPribadi,
+        catatanPribadi: catatanPribadi ?? t.catatanPribadi,
+      );
       notifyListeners();
     }
   }
 
   void hapusTontonan(String id) {
-    _daftarTontonan.removeWhere((t) => t.id == id);
+    _daftar.removeWhere((t) => t.id == id);
     notifyListeners();
   }
 
-  Tontonan? cariById(String id) =>
-      _daftarTontonan.firstWhere((t) => t.id == id, orElse: () => Tontonan(id: '', judul: '', genre: ''));
+  Tontonan? cariById(String id) {
+    return _daftar.firstWhereOrNull((t) => t.id == id);
+  }
 
-  List<Tontonan> cariByJudul(String keyword) => _daftarTontonan
-      .where((t) => t.judul.toLowerCase().contains(keyword.toLowerCase()))
-      .toList();
-
-  List<Tontonan> filterBy({String? genre, bool? sudahDitonton}) => _daftarTontonan
-      .where((t) {
-        final g = genre == null || t.genre == genre;
-        final s = sudahDitonton == null || t.sudahDitonton == sudahDitonton;
-        return g && s;
-      })
-      .toList();
+  List<Tontonan> cariByJudul(String keyword) {
+    return _daftar
+        .where((t) => t.judul.toLowerCase().contains(keyword.toLowerCase()))
+        .toList();
+  }
 }
