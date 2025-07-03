@@ -6,7 +6,7 @@ class FilmInfo {
   final String genre;
   final double rating;
   final String sinopsis;
-  final String poster; 
+  final String poster;
 
   FilmInfo({
     required this.judul,
@@ -18,27 +18,45 @@ class FilmInfo {
 }
 
 class FilmSearchService {
-  static const String _apiKey = '30ec435e'; // Ganti dengan API key kamu
+  static const String _apiKey = '30ec435e';
   static const String _baseUrl = 'https://www.omdbapi.com/';
 
-  static Future<FilmInfo?> cariFilm(String judul) async {
+  static Future<FilmInfo?> cariFilmByTitle(String judul) async {
     final url = Uri.parse('$_baseUrl?apikey=$_apiKey&t=$judul');
-
     try {
       final res = await http.get(url);
       if (res.statusCode == 200) {
         final data = json.decode(res.body);
-
         if (data['Response'] == 'True') {
           return FilmInfo(
             judul: data['Title'] ?? '',
             genre: data['Genre'] ?? '',
             rating: double.tryParse(data['imdbRating'] ?? '0') ?? 0.0,
             sinopsis: data['Plot'] ?? '',
-            poster: data['Poster'] ?? '', // ✅ Ambil poster dari API
+            poster: data['Poster'] ?? '',
           );
         } else {
           print('Film tidak ditemukan: ${data['Error']}');
+        }
+      } else {
+        print('Status code error: ${res.statusCode}');
+      }
+    } catch (e) {
+      print('Gagal fetch film: $e');
+    }
+    return null;
+  }
+
+  static Future<List<String>?> searchFilms(String query) async {
+    final url = Uri.parse('$_baseUrl?apikey=$_apiKey&s=$query');
+    try {
+      final res = await http.get(url);
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body);
+        if (data['Response'] == 'True' && data['Search'] != null) {
+          return List<String>.from(data['Search'].map((item) => item['Title'] as String));
+        } else {
+          print('Tidak ada hasil: ${data['Error']}');
         }
       } else {
         print('Status code error: ${res.statusCode}');
