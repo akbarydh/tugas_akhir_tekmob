@@ -128,7 +128,7 @@ class _EditTontonanScreenState extends State<EditTontonanScreen> {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,        // warna mencolok
+                  backgroundColor: const Color.fromARGB(255, 246, 186, 6),        // warna mencolok
                   foregroundColor: Colors.black,        // teks hitam kontras
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   textStyle: const TextStyle(
