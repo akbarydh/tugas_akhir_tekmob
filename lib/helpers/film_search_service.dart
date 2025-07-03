@@ -1,5 +1,3 @@
-// File: lib/helpers/film_search_service.dart
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -8,12 +6,14 @@ class FilmInfo {
   final String genre;
   final double rating;
   final String sinopsis;
+  final String poster; 
 
   FilmInfo({
     required this.judul,
     required this.genre,
     required this.rating,
     required this.sinopsis,
+    required this.poster,
   });
 }
 
@@ -35,6 +35,7 @@ class FilmSearchService {
             genre: data['Genre'] ?? '',
             rating: double.tryParse(data['imdbRating'] ?? '0') ?? 0.0,
             sinopsis: data['Plot'] ?? '',
+            poster: data['Poster'] ?? '', // ✅ Ambil poster dari API
           );
         } else {
           print('Film tidak ditemukan: ${data['Error']}');

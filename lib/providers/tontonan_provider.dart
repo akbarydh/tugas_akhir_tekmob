@@ -15,6 +15,7 @@ class TontonanProvider with ChangeNotifier {
       genre: t.genre,
       rating: t.rating,
       sinopsis: t.sinopsis,
+      poster: t.poster, // ✅ tambahkan poster
       sudahDitonton: false,
       ratingPribadi: t.ratingPribadi,
       catatanPribadi: t.catatanPribadi,
@@ -26,7 +27,7 @@ class TontonanProvider with ChangeNotifier {
   void updateTontonan(
     String id, {
     bool? sudahDitonton,
-    double? ratingPribadi, // ✅ perbaikan tipe
+    double? ratingPribadi,
     String? catatanPribadi,
   }) {
     final index = _daftar.indexWhere((t) => t.id == id);
@@ -38,6 +39,7 @@ class TontonanProvider with ChangeNotifier {
         genre: t.genre,
         rating: t.rating,
         sinopsis: t.sinopsis,
+        poster: t.poster, // ✅ pertahankan poster lama
         sudahDitonton: sudahDitonton ?? t.sudahDitonton,
         ratingPribadi: ratingPribadi ?? t.ratingPribadi,
         catatanPribadi: catatanPribadi ?? t.catatanPribadi,

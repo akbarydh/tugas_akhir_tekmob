@@ -1,5 +1,3 @@
-// File: lib/screens/tontonan_detail_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/tontonan_provider.dart';
@@ -41,7 +39,7 @@ class TontonanDetailScreen extends StatelessWidget {
       ),
       body: Center(
         child: Container(
-          width: 320, // ⬅️ Ukuran kotak diperbesar sedikit
+          width: 320,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.grey.shade900,
@@ -58,6 +56,23 @@ class TontonanDetailScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // ✅ Poster Section
+              if (tontonan.poster.isNotEmpty)
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      tontonan.poster,
+                      height: 300,
+                      fit: BoxFit.cover,
+                      errorBuilder: (ctx, error, stack) =>
+                          const Icon(Icons.broken_image, size: 100),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 20),
+
+              // ✅ Genre
               Text(
                 tontonan.genre,
                 style: const TextStyle(
@@ -68,28 +83,56 @@ class TontonanDetailScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
+
+              // ✅ Rating
               Text(
                 '⭐ ${tontonan.rating.toStringAsFixed(1)}',
                 style: const TextStyle(color: Colors.white, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
+
+              // ✅ Status Tontonan
               Text(
                 tontonan.sudahDitonton ? 'Sudah Ditonton' : 'Belum Ditonton',
                 style: const TextStyle(color: Colors.white70, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
+
+              // ✅ Rating Pribadi
               Text(
                 tontonan.ratingPribadi > 0
                     ? 'Rating Pribadi: ${tontonan.ratingPribadi.toStringAsFixed(1)}'
-                    : 'Belum dinilai',
+                    : 'Rating Pribadi: Belum dinilai',
                 style: const TextStyle(color: Colors.white70, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 14),
-              const Divider(color: Colors.white24, thickness: 0.5),
-              const SizedBox(height: 8),
+              const SizedBox(height: 20),
+
+              // ✅ Sinopsis
+              const Text(
+                'Sinopsis:',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                tontonan.sinopsis,
+                style: const TextStyle(color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+
+              // ✅ Catatan Pribadi
+              const Text(
+                'Catatan Pribadi:',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               Text(
                 tontonan.catatanPribadi.isNotEmpty
                     ? '"${tontonan.catatanPribadi}"'

@@ -47,8 +47,9 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
       genre: hasil.genre,
       rating: hasil.rating,
       sinopsis: hasil.sinopsis,
-      ratingPribadi: 0.0,         // 🔁 default aman
-      catatanPribadi: '',         // 🔁 default aman
+      poster: hasil.poster, // ✅ TAMBAHKAN POSTER
+      ratingPribadi: 0.0,
+      catatanPribadi: '',
     );
 
     Provider.of<TontonanProvider>(context, listen: false)
@@ -183,6 +184,20 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: ListTile(
+                          leading: t.poster.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Image.network(
+                                    t.poster,
+                                    width: 50,
+                                    height: 75,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (ctx, err, stack) =>
+                                        const Icon(Icons.broken_image,
+                                            color: Colors.white38),
+                                  ),
+                                )
+                              : const Icon(Icons.movie, color: Colors.white38),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           title: Text(
