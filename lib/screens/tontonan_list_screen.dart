@@ -1,5 +1,3 @@
-// File: lib/screens/tontonan_list_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -18,6 +16,7 @@ class TontonanListScreen extends StatefulWidget {
 
 class _TontonanListScreenState extends State<TontonanListScreen> {
   String _searchKeyword = '';
+  List<String> suggestions = [];
 
   Widget _buildStars(double rating) {
     return Row(
@@ -33,7 +32,7 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
   }
 
   Future<void> _cariFilmDanTambah(String judul) async {
-    final hasil = await FilmSearchService.cariFilm(judul);
+    final hasil = await FilmSearchService.cariFilmByTitle(judul);
     if (hasil == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Film tidak ditemukan.')),
@@ -84,8 +83,7 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
     );
 
     if (setuju == true) {
-      Provider.of<TontonanProvider>(context, listen: false)
-          .hapusTontonan(id);
+      Provider.of<TontonanProvider>(context, listen: false).hapusTontonan(id);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('"$judul" dihapus')),
       );
@@ -94,7 +92,7 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tontonanProv = Provider.of<TontonanProvider>(context);
+    final tontonanProv = context.watch<TontonanProvider>();
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -103,40 +101,115 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
         foregroundColor: Colors.white,
         title: const Text('Daftar Tontonan'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => AddTontonanScreen())),
-          ),
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () async {
-              final controller = TextEditingController();
-              await showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Cari Film'),
-                  content: TextField(
-                    controller: controller,
-                    decoration:
-                        const InputDecoration(hintText: 'Masukkan judul film'),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Batal'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        _cariFilmDanTambah(controller.text);
-                      },
-                      child: const Text('Cari & Tambah'),
-                    ),
-                  ],
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, right: 8.0),
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              );
-            },
+              ),
+              icon: const Icon(Icons.search, size: 18),
+              label: const Text('Cari Film'),
+              onPressed: () async {
+                final TextEditingController controller = TextEditingController();
+                await showDialog(
+                  context: context,
+                  builder: (ctx) => StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                      return AlertDialog(
+                        title: const Text('Cari Film', style: TextStyle(color: Colors.amber)),
+                        content: SizedBox(
+                          width: 300,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: controller,
+                                decoration: InputDecoration(
+                                  hintText: 'Masukkan judul film...',
+                                  hintStyle: TextStyle(color: Colors.grey[400]),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[800],
+                                ),
+                                style: const TextStyle(color: Colors.white),
+                                onChanged: (value) async {
+                                  if (value.length > 2) {
+                                    try {
+                                      final result = await FilmSearchService.searchFilms(value);
+                                      setState(() {
+                                        suggestions = result ?? [];
+                                      });
+                                    } catch (e) {
+                                      print('Error fetching suggestions: $e');
+                                      setState(() {
+                                        suggestions = [];
+                                      });
+                                    }
+                                  } else {
+                                    setState(() {
+                                      suggestions = [];
+                                    });
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                              if (controller.text.length > 2 && suggestions.isNotEmpty)
+                                Container(
+                                  height: 150,
+                                  width: 300,
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: suggestions.length > 10 ? 10 : suggestions.length,
+                                    itemBuilder: (context, index) {
+                                      final suggestion = suggestions[index];
+                                      return ListTile(
+                                        title: Text(suggestion, style: TextStyle(color: Colors.white)),
+                                        onTap: () {
+                                          controller.text = suggestion;
+                                          Navigator.pop(ctx);
+                                          _cariFilmDanTambah(suggestion);
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              _cariFilmDanTambah(controller.text);
+                            },
+                            child: const Text('Cari & Tambah'),
+                          ),
+                        ],
+                        backgroundColor: Colors.grey[900],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -266,7 +339,8 @@ class _TontonanListScreenState extends State<TontonanListScreen> {
                         ),
                         onTap: () => Navigator.of(ctx).push(
                           MaterialPageRoute(
-                              builder: (_) => TontonanDetailScreen(id: t.id)),
+                              builder: (_) =>
+                                  TontonanDetailScreen(id: t.id)),
                         ),
                       ),
                     );
