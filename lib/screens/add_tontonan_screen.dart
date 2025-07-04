@@ -1,3 +1,5 @@
+// File: lib/screens/add_tontonan_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -17,24 +19,27 @@ class _AddTontonanScreenState extends State<AddTontonanScreen> {
   final _ratingController = TextEditingController();
   final _sinopsisController = TextEditingController();
   final _catatanController = TextEditingController();
+  final _posterController = TextEditingController(); // ✅ Tambahan poster
   bool _sudahDitonton = false;
   double _ratingPribadi = 0.0;
 
   void _simpanData() {
     final tontonan = Tontonan(
       id: const Uuid().v4(),
-      judul: _judulController.text,
-      genre: _genreController.text,
+      judul: _judulController.text.trim(),
+      genre: _genreController.text.trim(),
       rating: double.tryParse(_ratingController.text) ?? 0.0,
-      sinopsis: _sinopsisController.text,
+      sinopsis: _sinopsisController.text.trim(),
+      poster: _posterController.text.trim(), // ✅ Set poster dari input
       sudahDitonton: _sudahDitonton,
-      ratingPribadi: _ratingPribadi.toDouble(), // ✅ pastikan double
-      catatanPribadi: _catatanController.text,
+      ratingPribadi: _ratingPribadi,
+      catatanPribadi: _catatanController.text.trim(),
     );
 
     Provider.of<TontonanProvider>(context, listen: false)
         .tambahTontonan(tontonan);
     Navigator.of(context).pop();
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Tontonan ditambahkan')),
     );
@@ -47,6 +52,7 @@ class _AddTontonanScreenState extends State<AddTontonanScreen> {
     _ratingController.dispose();
     _sinopsisController.dispose();
     _catatanController.dispose();
+    _posterController.dispose(); // ✅ Jangan lupa dispose
     super.dispose();
   }
 
@@ -76,6 +82,11 @@ class _AddTontonanScreenState extends State<AddTontonanScreen> {
               decoration: const InputDecoration(labelText: 'Sinopsis'),
               maxLines: 3,
             ),
+            TextField(
+              controller: _posterController,
+              decoration: const InputDecoration(
+                  labelText: 'URL Poster (opsional)'),
+            ),
             const SizedBox(height: 12),
             SwitchListTile(
               title: const Text('Sudah Ditonton'),
@@ -94,7 +105,8 @@ class _AddTontonanScreenState extends State<AddTontonanScreen> {
             ),
             TextField(
               controller: _catatanController,
-              decoration: const InputDecoration(labelText: 'Catatan Pribadi'),
+              decoration:
+                  const InputDecoration(labelText: 'Catatan Pribadi'),
               maxLines: 3,
             ),
             const SizedBox(height: 20),

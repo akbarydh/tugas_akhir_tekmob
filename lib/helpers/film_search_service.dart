@@ -18,7 +18,7 @@ class FilmInfo {
 }
 
 class FilmSearchService {
-  static const String _apiKey = '30ec435e'; // Ganti dengan API key kamu
+  static const String _apiKey = '30ec435e'; 
   static const String _baseUrl = 'https://www.omdbapi.com/';
 
   static Future<FilmInfo?> cariFilm(String judul) async {

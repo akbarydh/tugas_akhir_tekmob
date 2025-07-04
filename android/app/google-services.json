@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "556370069807",
+    "project_id": "playlaterapps",
+    "storage_bucket": "playlaterapps.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556370069807:android:636af0c01c35a9b08279da",
+        "android_client_info": {
+          "package_name": "com.nguwawor.playlater"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDD6mbJozFdvdbqX7XspnlKPUwdfgugBrI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

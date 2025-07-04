@@ -1,65 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/tontonan.dart';
-import 'package:collection/collection.dart';
 
 class TontonanProvider with ChangeNotifier {
-  final List<Tontonan> _daftar = [];
+  final _firestore = FirebaseFirestore.instance;
+  final _koleksi = 'tontonan';
 
-  List<Tontonan> get semuaTontonan => [..._daftar];
+  // ✅ Stream untuk sinkronisasi real-time
+  Stream<List<Tontonan>> get semuaTontonanStream {
+    return _firestore.collection(_koleksi).snapshots().map(
+      (snapshot) {
+        return snapshot.docs
+            .map((doc) => Tontonan.fromFirestore(doc.data(), doc.id))
+            .toList();
+      },
+    );
+  }
 
-  void tambahTontonan(Tontonan t) {
+  // ✅ Menambahkan data ke Firestore
+  Future<void> tambahTontonan(Tontonan t) async {
+    final id = const Uuid().v4();
     final tontonanBaru = Tontonan(
-      id: const Uuid().v4(),
+      id: id,
       judul: t.judul,
       genre: t.genre,
       rating: t.rating,
       sinopsis: t.sinopsis,
-      poster: t.poster, // ✅ tambahkan poster
-      sudahDitonton: false,
+      poster: t.poster,
+      sudahDitonton: t.sudahDitonton,
       ratingPribadi: t.ratingPribadi,
       catatanPribadi: t.catatanPribadi,
     );
-    _daftar.add(tontonanBaru);
-    notifyListeners();
+
+    await _firestore
+        .collection(_koleksi)
+        .doc(id)
+        .set(tontonanBaru.toFirestore());
   }
 
-  void updateTontonan(
+  // ✅ Update data di Firestore
+  Future<void> updateTontonan(
     String id, {
     bool? sudahDitonton,
     double? ratingPribadi,
     String? catatanPribadi,
-  }) {
-    final index = _daftar.indexWhere((t) => t.id == id);
-    if (index != -1) {
-      final t = _daftar[index];
-      _daftar[index] = Tontonan(
-        id: t.id,
-        judul: t.judul,
-        genre: t.genre,
-        rating: t.rating,
-        sinopsis: t.sinopsis,
-        poster: t.poster, // ✅ pertahankan poster lama
-        sudahDitonton: sudahDitonton ?? t.sudahDitonton,
-        ratingPribadi: ratingPribadi ?? t.ratingPribadi,
-        catatanPribadi: catatanPribadi ?? t.catatanPribadi,
-      );
-      notifyListeners();
+  }) async {
+    final doc = await _firestore.collection(_koleksi).doc(id).get();
+    if (!doc.exists) return;
+
+    final dataLama = Tontonan.fromFirestore(doc.data()!, doc.id);
+
+    final dataBaru = Tontonan(
+      id: dataLama.id,
+      judul: dataLama.judul,
+      genre: dataLama.genre,
+      rating: dataLama.rating,
+      sinopsis: dataLama.sinopsis,
+      poster: dataLama.poster,
+      sudahDitonton: sudahDitonton ?? dataLama.sudahDitonton,
+      ratingPribadi: ratingPribadi ?? dataLama.ratingPribadi,
+      catatanPribadi: catatanPribadi ?? dataLama.catatanPribadi,
+    );
+
+    await _firestore
+        .collection(_koleksi)
+        .doc(id)
+        .update(dataBaru.toFirestore());
+  }
+
+  // ✅ Hapus dari Firestore
+  Future<void> hapusTontonan(String id) async {
+    await _firestore.collection(_koleksi).doc(id).delete();
+  }
+
+  // ✅ Ambil satu data berdasarkan ID
+  Future<Tontonan?> cariById(String id) async {
+    final doc = await _firestore.collection(_koleksi).doc(id).get();
+    if (doc.exists) {
+      return Tontonan.fromFirestore(doc.data()!, doc.id);
     }
-  }
-
-  void hapusTontonan(String id) {
-    _daftar.removeWhere((t) => t.id == id);
-    notifyListeners();
-  }
-
-  Tontonan? cariById(String id) {
-    return _daftar.firstWhereOrNull((t) => t.id == id);
-  }
-
-  List<Tontonan> cariByJudul(String keyword) {
-    return _daftar
-        .where((t) => t.judul.toLowerCase().contains(keyword.toLowerCase()))
-        .toList();
+    return null;
   }
 }
